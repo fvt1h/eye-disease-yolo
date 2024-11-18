@@ -55,6 +55,11 @@ def show():
         try:
             model = load_model(model_option)
             # Tambahkan kode prediksi di sini
+            st.write(f"Hasil Prediksi: {pred_result}")
+            st.write(f"Tingkat Akurasi: {accuracy * 100:.2f}%")
+
+            now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            insert_history(uploaded_file.name, pred_result, model_option, now)
             st.write(f"Prediksi berhasil menggunakan model {model_option}.")
         except FileNotFoundError as e:
             st.error(e)
