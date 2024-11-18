@@ -6,7 +6,11 @@ from datetime import datetime
 import sqlite3
 import os
 import torchvision.transforms as transforms
-from ultralytics import YOLO  # Untuk solusi menggunakan ultralytics
+from ultralytics import YOLO
+try:
+    import cv2
+except ImportError:
+    import cv2.headless as cv2
 
 # Setup database connection
 conn = sqlite3.connect('history/prediction_history.db')

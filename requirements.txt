@@ -1,6 +1,7 @@
 streamlit
 torch
+torchvision
+ultralytics
 pillow
 pandas
-ultralytics
 opencv-python-headless
