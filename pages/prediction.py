@@ -1,16 +1,25 @@
 import streamlit as st
+import os
+import sys
+
+# Tambahkan penanganan import cv2 yang lebih robust
+try:
+    import cv2
+except ImportError:
+    # Coba import dari opencv-python-headless
+    import cv2
+
+# Tambahkan print debugging untuk memastikan import berhasil
+print(f"OpenCV version: {cv2.__version__}")
+print(f"OpenCV path: {cv2.__file__}")
+
 from PIL import Image
 import torch
 import pandas as pd
 from datetime import datetime
 import sqlite3
-import os
 import torchvision.transforms as transforms
 from ultralytics import YOLO
-try:
-    import cv2
-except ImportError:
-    import cv2.headless as cv2
 
 # Setup database connection
 conn = sqlite3.connect('history/prediction_history.db')
@@ -36,6 +45,10 @@ def load_model(model_option):
     
     model_path = available_models[model_option]
     if not os.path.exists(model_path):
+        # Tambahkan print untuk debugging path
+        st.write(f"Mencoba memuat model dari: {model_path}")
+        st.write(f"Direktori saat ini: {os.getcwd()}")
+        st.write(f"Isi direktori: {os.listdir()}")
         raise FileNotFoundError(f"File model untuk {model_option} tidak ditemukan di {model_path}.")
     
     # Solusi: Memuat model menggunakan ultralytics
@@ -89,9 +102,12 @@ def show():
             insert_history(uploaded_file.name, pred_result, model_option, accuracy, now)
         
         except FileNotFoundError as e:
-            st.error(e)
+            st.error(str(e))
         except Exception as e:
             st.error("Terjadi kesalahan saat melakukan prediksi.")
             st.error(str(e))
+            # Tambahkan print untuk debugging
+            import traceback
+            traceback.print_exc()
 
 show()

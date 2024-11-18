@@ -1,7 +1,8 @@
 streamlit
 torch
 torchvision
-ultralytics
+ultralytics==8.1.25
 pillow
 pandas
-opencv-python-headless
+opencv-python-headless==4.7.0.72
+numpy
