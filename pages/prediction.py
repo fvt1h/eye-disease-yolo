@@ -1,79 +1,83 @@
 import streamlit as st
 from PIL import Image
 import torch
-import sqlite3
 import os
+import sqlite3
 from datetime import datetime
 
-# Fungsi untuk menyimpan hasil prediksi ke database
-def save_prediction_to_history(filename, image, prediction, model_name, accuracy):
+# Fungsi untuk menyimpan riwayat prediksi
+def save_to_history(file_name, model_name, result, confidence):
     conn = sqlite3.connect('history/prediction_history.db')
     cursor = conn.cursor()
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS history (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            filename TEXT,
+            file_name TEXT,
             image_path TEXT,
             prediction TEXT,
             model_name TEXT,
-            accuracy REAL,
+            confidence REAL,
             timestamp TEXT
         )
     """)
-    image_path = os.path.join("history/images", filename)
-    os.makedirs(os.path.dirname(image_path), exist_ok=True)
-    image.save(image_path)
     cursor.execute("""
-        INSERT INTO history (filename, image_path, prediction, model_name, accuracy, timestamp)
+        INSERT INTO history (file_name, image_path, prediction, model_name, confidence, timestamp) 
         VALUES (?, ?, ?, ?, ?, ?)
-    """, (filename, image_path, prediction, model_name, accuracy, datetime.now()))
+    """, (file_name, f"uploads/{file_name}", result, model_name, confidence, datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
     conn.commit()
     conn.close()
 
-# Fungsi untuk melakukan prediksi
-def predict(image, model):
-    results = model(image)
-    predictions = results.pandas().xyxy[0]
-    if len(predictions) > 0:
-        prediction = predictions.iloc[0]["name"]
-        confidence = predictions.iloc[0]["confidence"]
+# Fungsi untuk melakukan prediksi menggunakan model YOLO
+def predict(model_path, image_path):
+    model = torch.hub.load('ultralytics/yolov5', model_path)
+    results = model(image_path)
+    pred = results.pandas().xyxy[0]  # Output prediksi dalam bentuk DataFrame
+    if not pred.empty:
+        top_pred = pred.iloc[0]
+        return top_pred['name'], top_pred['confidence']
     else:
-        prediction = "Tidak ada deteksi"
-        confidence = 0.0
-    return prediction, confidence
+        return "Tidak terdeteksi", 0.0
 
 def show():
     st.title("Prediksi Penyakit Mata")
-    
-    # Pilih model
-    st.subheader("Pilih Model YOLOv11")
-    model_option = st.selectbox("Pilih model untuk digunakan:", ["YOLOv11n", "YOLOv11s", "YOLOv11m"])
-    model_path = {
-        "YOLOv11n": "models/yolov11n.pt",
-        "YOLOv11s": "models/yolov11s.pt",
-        "YOLOv11m": "models/yolov11m.pt",
-    }[model_option]
-    model = torch.hub.load('ultralytics/yolov5', 'custom', path=model_path)
+    st.write("Unggah gambar fundus mata untuk melakukan deteksi.")
 
-    # Unggah gambar
-    uploaded_file = st.file_uploader("Unggah gambar fundus", type=["jpg", "jpeg", "png"])
+    # Pilihan model
+    model_options = {
+        "YOLOv11n": "yolov5n",
+        "YOLOv11s": "yolov5s",
+        "YOLOv11m": "yolov5m"
+    }
+    model_choice = st.selectbox("Pilih Model", list(model_options.keys()))
+    model_path = model_options[model_choice]
+
+    # Upload gambar
+    uploaded_file = st.file_uploader("Unggah gambar", type=["jpg", "jpeg", "png"])
     
     if uploaded_file is not None:
+        # Simpan gambar yang diunggah
+        if not os.path.exists("uploads"):
+            os.makedirs("uploads")
+        file_path = os.path.join("uploads", uploaded_file.name)
+        with open(file_path, "wb") as f:
+            f.write(uploaded_file.getbuffer())
+
         # Tampilkan gambar yang diunggah
-        image = Image.open(uploaded_file)
-        st.image(image, caption="Gambar yang diunggah", use_column_width=True)
-        
-        # Lakukan prediksi
+        st.image(Image.open(file_path), caption="Gambar yang diunggah", use_column_width=True)
+
+        # Prediksi
         if st.button("Prediksi"):
-            prediction, confidence = predict(image, model)
-            confidence_percentage = confidence * 100
-
-            # Tampilkan hasil prediksi
-            st.write("### Hasil Prediksi")
-            st.write(f"**Nama File:** {uploaded_file.name}")
-            st.write(f"**Hasil Prediksi:** {prediction}")
-            st.write(f"**Tingkat Akurasi:** {confidence_percentage:.2f}%")
-
-            # Simpan hasil ke riwayat
-            save_prediction_to_history(uploaded_file.name, image, prediction, model_option, confidence_percentage)
-            st.success("Hasil prediksi telah disimpan ke riwayat.")
+            result, confidence = predict(model_path, file_path)
+            st.write(f"**Hasil Prediksi:** {result}")
+            st.write(f"**Tingkat Akurasi:** {confidence:.2f}")
+            
+            # Keterangan hasil prediksi
+            explanations = {
+                "Normal": "Gambar menunjukkan kondisi mata normal.",
+                "Glaukoma": "Terdeteksi adanya indikasi Glaukoma. Segera konsultasikan dengan dokter spesialis mata.",
+                "Diabetic Retinopathy": "Terdeteksi adanya indikasi Retinopati Diabetik. Periksa lebih lanjut dengan dokter."
+            }
+            st.write(f"**Keterangan:** {explanations.get(result, 'Tidak ada keterangan.')}")
+            
+            # Simpan ke riwayat
+            save_to_history(uploaded_file.name, model_choice, result, confidence)
