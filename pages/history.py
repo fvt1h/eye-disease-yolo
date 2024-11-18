@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import sqlite3
+import os
 
 def load_history():
     conn = sqlite3.connect('history/prediction_history.db')

@@ -1,5 +1,6 @@
 import streamlit as st
 from PIL import Image
+import os
 
 def show():
     st.title("Deteksi Penyakit Mata")

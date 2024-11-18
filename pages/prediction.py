@@ -4,6 +4,7 @@ import torch
 import pandas as pd
 from datetime import datetime
 import sqlite3
+import os
 
 # Setup database connection
 conn = sqlite3.connect('history/prediction_history.db')
