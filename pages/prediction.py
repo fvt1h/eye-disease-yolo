@@ -5,7 +5,6 @@ import pandas as pd
 from datetime import datetime
 import sqlite3
 import os
-import torchvision.transforms as transforms
 
 # Setup database connection
 conn = sqlite3.connect('history/prediction_history.db')
@@ -22,7 +21,7 @@ def load_model(model_option):
     available_models = {
         "YOLOv11n": "./models/best_yoloV11n.pt",
         "YOLOv11s": "./models/best_yoloV11s.pt",
-        # "YOLOv11m": "./models/best_yoloV11m.pt"  # Uncomment jika sudah ada model YOLOv11m
+        # "YOLOv11m": "./models/best_yolov11m.pt"
     }
     
     if model_option not in available_models:
@@ -33,7 +32,6 @@ def load_model(model_option):
         raise FileNotFoundError(f"File model untuk {model_option} tidak ditemukan di {model_path}.")
     
     model = torch.load(model_path, map_location="cpu")
-    model.eval()  # Pastikan model dalam mode evaluasi
     return model
 
 def insert_history(file_name, prediction, model, accuracy, timestamp):
@@ -41,18 +39,10 @@ def insert_history(file_name, prediction, model, accuracy, timestamp):
                    (file_name, prediction, model, accuracy, timestamp))
     conn.commit()
 
-def preprocess_image(image):
-    # Transformasi gambar (sesuaikan sesuai dengan model YOLO yang Anda gunakan)
-    transform = transforms.Compose([
-        transforms.Resize((640, 640)),  # Sesuaikan ukuran ini dengan input model
-        transforms.ToTensor(),
-    ])
-    return transform(image).unsqueeze(0)  # Tambahkan dimensi batch
-
 def show():
     st.title("Halaman Prediksi")
     
-    model_option = st.selectbox("Pilih Model", ["YOLOv11n", "YOLOv11s"])  # Tambahkan YOLOv11m jika sudah siap
+    model_option = st.selectbox("Pilih Model", ["YOLOv11n", "YOLOv11s"])
 
     uploaded_file = st.file_uploader("Unggah Gambar", type=["jpg", "png"])
 
@@ -61,23 +51,20 @@ def show():
         
         try:
             model = load_model(model_option)
-            image = Image.open(uploaded_file)
-            image_tensor = preprocess_image(image)
             
-            # Prediksi dengan model
+            image = Image.open(uploaded_file).convert('RGB')
+            image_tensor = torch.tensor([torchvision.transforms.ToTensor()(image)])  # Preprocessing sesuai model
+            
             with torch.no_grad():
-                output = model(image_tensor)
-                # Asumsi output model mengandung 'labels' dan 'scores'
-                pred_result = output[0]['labels'][0].item()  # Ganti dengan akses yang sesuai
-                accuracy = output[0]['scores'][0].item()
+                predictions = model(image_tensor)
+                pred_label = predictions[0].get('label', "Tidak Diketahui")  # Ubah sesuai format model
+                accuracy = predictions[0].get('confidence', 0.0)
             
-            # Tampilkan hasil prediksi
-            st.write(f"Hasil Prediksi: {pred_result}")
+            st.write(f"Hasil Prediksi: {pred_label}")
             st.write(f"Tingkat Akurasi: {accuracy * 100:.2f}%")
 
-            # Simpan ke dalam database
             now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            insert_history(uploaded_file.name, pred_result, model_option, accuracy, now)
+            insert_history(uploaded_file.name, pred_label, model_option, accuracy, now)
         
         except FileNotFoundError as e:
             st.error(e)
