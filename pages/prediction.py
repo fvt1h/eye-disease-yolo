@@ -1,18 +1,27 @@
-import streamlit as st
-import os
 import sys
+import os
 
-# Tambahkan penanganan import cv2 yang lebih robust
+# Tambahkan debugging untuk path Python
+print("Python Executable:", sys.executable)
+print("Python Version:", sys.version)
+print("Python Path:", sys.path)
+
+# Pastikan NumPy dan OpenCV diimpor dengan benar
+try:
+    import numpy as np
+    print("NumPy Version:", np.__version__)
+except ImportError as e:
+    print("NumPy Import Error:", str(e))
+    sys.exit(1)
+
 try:
     import cv2
-except ImportError:
-    # Coba import dari opencv-python-headless
-    import cv2
+    print("OpenCV Version:", cv2.__version__)
+except ImportError as e:
+    print("OpenCV Import Error:", str(e))
+    sys.exit(1)
 
-# Tambahkan print debugging untuk memastikan import berhasil
-print(f"OpenCV version: {cv2.__version__}")
-print(f"OpenCV path: {cv2.__file__}")
-
+import streamlit as st
 from PIL import Image
 import torch
 import pandas as pd
@@ -20,6 +29,28 @@ from datetime import datetime
 import sqlite3
 import torchvision.transforms as transforms
 from ultralytics import YOLO
+
+# Sisanya sama seperti sebelumnya...
+
+# Tambahkan error handling yang lebih detail
+def show():
+    try:
+        st.title("Halaman Prediksi")
+        
+        model_option = st.selectbox("Pilih Model", ["YOLOv11n", "YOLOv11s"])
+        uploaded_file = st.file_uploader("Unggah Gambar", type=["jpg", "png"])
+
+        if uploaded_file is not None:
+            st.image(uploaded_file, caption="Gambar yang diunggah", use_container_width=True)
+            
+            # Sisa kode prediksi...
+    
+    except Exception as e:
+        st.error(f"Terjadi kesalahan: {str(e)}")
+        import traceback
+        st.error(traceback.format_exc())
+
+show()
 
 # Setup database connection
 conn = sqlite3.connect('history/prediction_history.db')

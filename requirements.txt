@@ -1,8 +1,10 @@
-streamlit
+setuptools
+wheel
+numpy==1.23.5
+opencv-python-headless==4.7.0.72
 torch
 torchvision
 ultralytics==8.1.25
+streamlit
 pillow
 pandas
-opencv-python-headless==4.7.0.72
-numpy
