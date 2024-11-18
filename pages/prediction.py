@@ -35,7 +35,8 @@ def load_model(model_option):
     if not os.path.exists(model_path):
         raise FileNotFoundError(f"File model untuk {model_option} tidak ditemukan di {model_path}.")
     
-    model = torch.load(model_path, map_location="cpu")
+    # Memuat model dengan opsi `weights_only=True`
+    model = torch.load(model_path, map_location="cpu", weights_only=True)
     model.eval()  # Pastikan model dalam mode evaluasi
     return model
 
@@ -63,7 +64,7 @@ def show():
     uploaded_file = st.file_uploader("Unggah Gambar", type=["jpg", "png"])
 
     if uploaded_file is not None:
-        st.image(uploaded_file, caption="Gambar yang diunggah", use_column_width=True)
+        st.image(uploaded_file, caption="Gambar yang diunggah", use_container_width=True)
         
         try:
             # Load model sesuai pilihan
