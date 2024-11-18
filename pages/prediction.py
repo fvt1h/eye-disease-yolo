@@ -14,6 +14,7 @@ cursor.execute('''CREATE TABLE IF NOT EXISTS history
                    file_name TEXT, 
                    prediction TEXT, 
                    model TEXT, 
+                   accuracy REAL,
                    timestamp TEXT)''')
 
 def load_model(model_option):
@@ -32,12 +33,12 @@ def load_model(model_option):
     if not os.path.exists(model_path):
         raise FileNotFoundError(f"File model untuk {model_option} tidak ditemukan di {model_path}.")
     
-    model = torch.load(model_path, map_location="cpu")
+    model = torch.load(model_path, map_location="cpu", weights_only=True)  # Tambah weights_only=True
     return model
 
-def insert_history(file_name, prediction, model, timestamp):
-    cursor.execute("INSERT INTO history (file_name, prediction, model, timestamp) VALUES (?, ?, ?, ?)",
-                   (file_name, prediction, model, timestamp))
+def insert_history(file_name, prediction, model, accuracy, timestamp):
+    cursor.execute("INSERT INTO history (file_name, prediction, model, accuracy, timestamp) VALUES (?, ?, ?, ?, ?)",
+                   (file_name, prediction, model, accuracy, timestamp))
     conn.commit()
 
 def show():
@@ -49,7 +50,7 @@ def show():
     uploaded_file = st.file_uploader("Unggah Gambar", type=["jpg", "png"])
 
     if uploaded_file is not None:
-        st.image(uploaded_file, caption="Gambar yang diunggah", use_column_width=True)
+        st.image(uploaded_file, caption="Gambar yang diunggah", use_container_width=True)  # Ganti use_column_width ke use_container_width
         
         # Load dan jalankan prediksi
         try:
