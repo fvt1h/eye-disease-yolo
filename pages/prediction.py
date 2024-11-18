@@ -1,56 +1,10 @@
-import sys
-import os
-
-# Tambahkan debugging untuk path Python
-print("Python Executable:", sys.executable)
-print("Python Version:", sys.version)
-print("Python Path:", sys.path)
-
-# Pastikan NumPy dan OpenCV diimpor dengan benar
-try:
-    import numpy as np
-    print("NumPy Version:", np.__version__)
-except ImportError as e:
-    print("NumPy Import Error:", str(e))
-    sys.exit(1)
-
-try:
-    import cv2
-    print("OpenCV Version:", cv2.__version__)
-except ImportError as e:
-    print("OpenCV Import Error:", str(e))
-    sys.exit(1)
-
 import streamlit as st
 from PIL import Image
-import torch
 import pandas as pd
 from datetime import datetime
 import sqlite3
-import torchvision.transforms as transforms
-from ultralytics import YOLO
-
-# Sisanya sama seperti sebelumnya...
-
-# Tambahkan error handling yang lebih detail
-def show():
-    try:
-        st.title("Halaman Prediksi")
-        
-        model_option = st.selectbox("Pilih Model", ["YOLOv11n", "YOLOv11s"])
-        uploaded_file = st.file_uploader("Unggah Gambar", type=["jpg", "png"])
-
-        if uploaded_file is not None:
-            st.image(uploaded_file, caption="Gambar yang diunggah", use_container_width=True)
-            
-            # Sisa kode prediksi...
-    
-    except Exception as e:
-        st.error(f"Terjadi kesalahan: {str(e)}")
-        import traceback
-        st.error(traceback.format_exc())
-
-show()
+import os
+from ultralytics import solutions
 
 # Setup database connection
 conn = sqlite3.connect('history/prediction_history.db')
@@ -65,38 +19,10 @@ cursor.execute('''CREATE TABLE IF NOT EXISTS history
 
 class_names = {0: "Normal", 1: "Glaukoma", 2: "Diabetic Retinopathy"}
 
-def load_model(model_option):
-    available_models = {
-        "YOLOv11n": "./models/best_yoloV11n.pt",
-        "YOLOv11s": "./models/best_yoloV11s.pt",
-    }
-    
-    if model_option not in available_models:
-        raise FileNotFoundError(f"Model {model_option} belum tersedia. Silakan pilih model lain.")
-    
-    model_path = available_models[model_option]
-    if not os.path.exists(model_path):
-        # Tambahkan print untuk debugging path
-        st.write(f"Mencoba memuat model dari: {model_path}")
-        st.write(f"Direktori saat ini: {os.getcwd()}")
-        st.write(f"Isi direktori: {os.listdir()}")
-        raise FileNotFoundError(f"File model untuk {model_option} tidak ditemukan di {model_path}.")
-    
-    # Solusi: Memuat model menggunakan ultralytics
-    return YOLO(model_path)
-
 def insert_history(file_name, prediction, model, accuracy, timestamp):
     cursor.execute("INSERT INTO history (file_name, prediction, model, accuracy, timestamp) VALUES (?, ?, ?, ?, ?)",
                    (file_name, prediction, model, accuracy, timestamp))
     conn.commit()
-
-def preprocess_image(image):
-    transform = transforms.Compose([
-        transforms.Resize((640, 640)),  # Resolusi input model
-        transforms.ToTensor(),
-        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-    ])
-    return transform(image).unsqueeze(0)  # Tambahkan dimensi batch
 
 def show():
     st.title("Halaman Prediksi")
@@ -108,18 +34,23 @@ def show():
         st.image(uploaded_file, caption="Gambar yang diunggah", use_container_width=True)
         
         try:
-            model = load_model(model_option)
-            image = Image.open(uploaded_file).convert("RGB")
-            image_tensor = preprocess_image(image)
+            # Pemuatan model menggunakan Ultralytics Solutions
+            available_models = {
+                "YOLOv11n": "./models/best_yoloV11n.pt",
+                "YOLOv11s": "./models/best_yoloV11s.pt",
+            }
             
-            # Prediksi dengan model
-            results = model(image_tensor)
-            output = results[0]
-
-            if len(output.boxes) > 0:
-                pred_class_id = int(output.boxes[0].cls)  # Kelas prediksi pertama
-                accuracy = float(output.boxes[0].conf)   # Confidence pertama
-                pred_result = class_names.get(pred_class_id, "Kelas Tidak Dikenal")
+            model_path = available_models.get(model_option)
+            if not os.path.exists(model_path):
+                raise FileNotFoundError(f"Model {model_option} tidak ditemukan di {model_path}.")
+            
+            # Inferensi menggunakan solusi Ultralytics
+            results = solutions.inference(model=model_path, source=uploaded_file)
+            
+            # Ekstraksi hasil deteksi
+            if len(results) > 0:  # Jika ada hasil deteksi
+                pred_result = class_names.get(results[0].cls, "Kelas Tidak Dikenal")
+                accuracy = results[0].conf
             else:
                 pred_result = "Tidak ada objek terdeteksi"
                 accuracy = 0
@@ -128,17 +59,14 @@ def show():
             st.write(f"**Hasil Prediksi:** {pred_result}")
             st.write(f"**Tingkat Akurasi:** {accuracy * 100:.2f}%")
             
-            # Simpan hasil ke database
+            # Simpan ke dalam database
             now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             insert_history(uploaded_file.name, pred_result, model_option, accuracy, now)
         
         except FileNotFoundError as e:
-            st.error(str(e))
+            st.error(e)
         except Exception as e:
             st.error("Terjadi kesalahan saat melakukan prediksi.")
             st.error(str(e))
-            # Tambahkan print untuk debugging
-            import traceback
-            traceback.print_exc()
 
 show()

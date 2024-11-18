@@ -1,7 +1,0 @@
-python3-dev
-build-essential
-libopenblas-dev
-liblapack-dev
-gfortran
-libgl1-mesa-glx
-libglib2.0-0
