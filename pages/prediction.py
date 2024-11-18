@@ -18,8 +18,8 @@ cursor.execute('''CREATE TABLE IF NOT EXISTS history
 def load_model(model_option):
     # Definisikan path model yang tersedia
     available_models = {
-        "YOLOv11n": "./models/best_yolov11n.pt",
-        "YOLOv11s": "./models/best_yolov11s.pt",
+        "YOLOv11n": "./models/best_yoloV11n.pt",
+        "YOLOv11s": "./models/best_yoloV11s.pt",
         # "YOLOv11m": "./models/best_yolov11m.pt"  # Tambahkan ini ketika model sudah tersedia
     }
     
