@@ -15,10 +15,23 @@ cursor.execute('''CREATE TABLE IF NOT EXISTS history
                    model TEXT, 
                    timestamp TEXT)''')
 
-def load_model(model_name):
-    model_path = f"models/{model_name}.pt"
+def load_model(model_option):
+    # Definisikan path model yang tersedia
+    available_models = {
+        "YOLOv11n": "models/yolov11n.pt",
+        "YOLOv11s": "models/yolov11s.pt",
+        # "YOLOv11m": "models/yolov11m.pt"  # Tambahkan ini ketika model sudah tersedia
+    }
+    
+    # Cek apakah model ada dalam available_models
+    if model_option not in available_models:
+        raise FileNotFoundError(f"Model {model_option} belum tersedia. Silakan pilih model lain.")
+    
+    model_path = available_models[model_option]
+    if not os.path.exists(model_path):
+        raise FileNotFoundError(f"File model untuk {model_option} tidak ditemukan di {model_path}.")
+    
     model = torch.load(model_path, map_location="cpu")
-    model.eval()
     return model
 
 def insert_history(file_name, prediction, model, timestamp):
@@ -27,21 +40,20 @@ def insert_history(file_name, prediction, model, timestamp):
     conn.commit()
 
 def show():
-    st.title("Prediksi Penyakit Mata")
-    uploaded_file = st.file_uploader("Upload gambar fundus", type=["jpg", "png"])
-    model_option = st.selectbox("Pilih model", ["yolov11n", "yolov11s", "yolov11m"])
+    st.title("Halaman Prediksi")
+    
+    # Pilihan model yang tersedia
+    model_option = st.selectbox("Pilih Model", ["YOLOv11n", "YOLOv11s"])  # Tambah "YOLOv11m" nanti jika sudah siap
 
-    if uploaded_file:
-        img = Image.open(uploaded_file)
-        st.image(img, caption="Gambar yang diupload", use_column_width=True)
+    uploaded_file = st.file_uploader("Unggah Gambar", type=["jpg", "png"])
 
-        model = load_model(model_option)
-        # Asumsi prediksi dan akurasi
-        pred_result = "Diabetic Retinopathy"
-        accuracy = 0.92
-
-        st.write(f"Hasil Prediksi: {pred_result}")
-        st.write(f"Tingkat Akurasi: {accuracy * 100:.2f}%")
-
-        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        insert_history(uploaded_file.name, pred_result, model_option, now)
+    if uploaded_file is not None:
+        st.image(uploaded_file, caption="Gambar yang diunggah", use_column_width=True)
+        
+        # Load dan jalankan prediksi
+        try:
+            model = load_model(model_option)
+            # Tambahkan kode prediksi di sini
+            st.write(f"Prediksi berhasil menggunakan model {model_option}.")
+        except FileNotFoundError as e:
+            st.error(e)
