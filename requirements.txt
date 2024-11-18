@@ -1,6 +1,5 @@
-streamlit==1.27.0
-torch==1.13.1
-Pillow==9.5.0
-pandas==2.0.3
+streamlit
+torch
+pandas
 sqlite3
-ultralytics==8.0.5
+ultralytics
