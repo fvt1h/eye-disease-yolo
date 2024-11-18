@@ -3,7 +3,6 @@ from PIL import Image
 import torch
 import numpy as np
 import pandas as pd
-import cv2
 import sqlite3
 from datetime import datetime
 import os
