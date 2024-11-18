@@ -46,7 +46,7 @@ def show():
     model_options = {
         "YOLOv11n": "yolov5n",
         "YOLOv11s": "yolov5s",
-        "YOLOv11m": "yolov5m"
+        #"YOLOv11m": "yolov5m"
     }
     model_choice = st.selectbox("Pilih Model", list(model_options.keys()))
     model_path = model_options[model_choice]
