@@ -2,4 +2,3 @@ streamlit
 torch
 pillow
 pandas
-sqlite3
