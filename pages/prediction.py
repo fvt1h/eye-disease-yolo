@@ -1,83 +1,71 @@
 import streamlit as st
 from PIL import Image
-import torch
 import os
-import sqlite3
 from datetime import datetime
+import sqlite3
+from ultralytics import YOLO
 
 # Fungsi untuk menyimpan riwayat prediksi
-def save_to_history(file_name, model_name, result, confidence):
+def save_to_history(file_name, result_label, model_used, confidence, image_path):
     conn = sqlite3.connect('history/prediction_history.db')
     cursor = conn.cursor()
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS history (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            file_name TEXT,
-            image_path TEXT,
-            prediction TEXT,
-            model_name TEXT,
-            confidence REAL,
-            timestamp TEXT
-        )
-    """)
-    cursor.execute("""
-        INSERT INTO history (file_name, image_path, prediction, model_name, confidence, timestamp) 
-        VALUES (?, ?, ?, ?, ?, ?)
-    """, (file_name, f"uploads/{file_name}", result, model_name, confidence, datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
+    cursor.execute('''CREATE TABLE IF NOT EXISTS history (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        file_name TEXT,
+                        image_path TEXT,
+                        result_label TEXT,
+                        model_used TEXT,
+                        confidence REAL,
+                        prediction_time TEXT)''')
+    prediction_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    cursor.execute("INSERT INTO history (file_name, image_path, result_label, model_used, confidence, prediction_time) VALUES (?, ?, ?, ?, ?, ?)",
+                   (file_name, image_path, result_label, model_used, confidence, prediction_time))
     conn.commit()
     conn.close()
 
-# Fungsi untuk melakukan prediksi menggunakan model YOLO
-def predict(model_path, image_path):
-    model = torch.hub.load('ultralytics/yolov5', model_path)
-    results = model(image_path)
-    pred = results.pandas().xyxy[0]  # Output prediksi dalam bentuk DataFrame
-    if not pred.empty:
-        top_pred = pred.iloc[0]
-        return top_pred['name'], top_pred['confidence']
-    else:
-        return "Tidak terdeteksi", 0.0
-
 def show():
     st.title("Prediksi Penyakit Mata")
-    st.write("Unggah gambar fundus mata untuk melakukan deteksi.")
 
-    # Pilihan model
-    model_options = {
-        "YOLOv11n": "yolov5n",
-        "YOLOv11s": "yolov5s",
-        #"YOLOv11m": "yolov5m"
+    # Pilih model YOLO
+    models = {
+        "YOLOv11n": "best_yoloV11n.pt",
+        "YOLOv11s": "best_yoloV11s.pt",
+        "YOLOv11m": "best_yoloV11m.pt",
     }
-    model_choice = st.selectbox("Pilih Model", list(model_options.keys()))
-    model_path = model_options[model_choice]
+    model_name = st.selectbox("Pilih Model", list(models.keys()))
+    selected_model_path = models[model_name]
 
     # Upload gambar
-    uploaded_file = st.file_uploader("Unggah gambar", type=["jpg", "jpeg", "png"])
-    
+    uploaded_file = st.file_uploader("Unggah Gambar Fundus", type=["jpg", "png", "jpeg"])
+
     if uploaded_file is not None:
-        # Simpan gambar yang diunggah
-        if not os.path.exists("uploads"):
-            os.makedirs("uploads")
-        file_path = os.path.join("uploads", uploaded_file.name)
-        with open(file_path, "wb") as f:
-            f.write(uploaded_file.getbuffer())
+        image = Image.open(uploaded_file)
+        st.image(image, caption="Gambar yang diunggah", use_column_width=True)
 
-        # Tampilkan gambar yang diunggah
-        st.image(Image.open(file_path), caption="Gambar yang diunggah", use_column_width=True)
+        # Simpan sementara gambar yang diunggah
+        temp_dir = "temp"
+        if not os.path.exists(temp_dir):
+            os.makedirs(temp_dir)
+        temp_path = os.path.join(temp_dir, uploaded_file.name)
+        image.save(temp_path)
 
-        # Prediksi
+        # Prediksi jika tombol diklik
         if st.button("Prediksi"):
-            result, confidence = predict(model_path, file_path)
-            st.write(f"**Hasil Prediksi:** {result}")
-            st.write(f"**Tingkat Akurasi:** {confidence:.2f}")
-            
-            # Keterangan hasil prediksi
-            explanations = {
-                "Normal": "Gambar menunjukkan kondisi mata normal.",
-                "Glaukoma": "Terdeteksi adanya indikasi Glaukoma. Segera konsultasikan dengan dokter spesialis mata.",
-                "Diabetic Retinopathy": "Terdeteksi adanya indikasi Retinopati Diabetik. Periksa lebih lanjut dengan dokter."
-            }
-            st.write(f"**Keterangan:** {explanations.get(result, 'Tidak ada keterangan.')}")
-            
-            # Simpan ke riwayat
-            save_to_history(uploaded_file.name, model_choice, result, confidence)
+            # Load model dan lakukan prediksi
+            model = YOLO(selected_model_path)
+            results = model.predict(source=temp_path, save=True)
+
+            # Ambil hasil prediksi
+            result = results[0]
+            result_label = result.names[result.boxes.data[0][-1].int()]
+            confidence = result.boxes.data[0][-2].item() * 100
+
+            # Tampilkan hasil
+            st.write("Hasil Prediksi:")
+            st.image(result.plot(), caption=f"Hasil Prediksi {result_label}", use_column_width=True)
+            st.write(f"Nama file: {uploaded_file.name}")
+            st.write(f"Hasil: {result_label}")
+            st.write(f"Tingkat akurasi: {confidence:.2f}%")
+
+            # Simpan riwayat prediksi
+            save_to_history(uploaded_file.name, result_label, model_name, confidence, temp_path)
