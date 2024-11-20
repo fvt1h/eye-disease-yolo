@@ -27,9 +27,9 @@ def show():
 
     # Pilihan model
     models = {
-        "YOLOv11n": ".models/best_yoloV11n.pt",
-        "YOLOv11s": ".models/best_yoloV11s.pt",
-        #"YOLOv11m": ".models/best_yoloV11m.pt"
+        "YOLOv11n": "./models/best_yoloV11n.pt",
+        "YOLOv11s": "./models/best_yoloV11s.pt",
+        #"YOLOv11m": "./models/best_yoloV11m.pt"
     }
     model_name = st.selectbox("Pilih Model", list(models.keys()))
     
