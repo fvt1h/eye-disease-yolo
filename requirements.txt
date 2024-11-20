@@ -2,6 +2,3 @@ streamlit
 ultralytics
 Pillow
 opencv-python-headless
-pandas
-sqlite3
-werkzeug
