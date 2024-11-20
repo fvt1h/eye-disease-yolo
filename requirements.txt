@@ -1,4 +1,3 @@
-streamlit
-torch
-pandas
-ultralytics
+streamlit==1.25.0
+ultralytics>=8.0.144
+Pillow==10.0.1
