@@ -32,9 +32,9 @@ def show():
 
     # Pilihan model
     model_options = {
-        "YOLOv11n": "best_yoloV11n.pt",
-        "YOLOv11s": "best_yoloV11s.pt",
-        #"YOLOv11m": "best_yoloV11m.pt"
+        "YOLOv11n": "./models/best_yoloV11n.pt",
+        "YOLOv11s": "./models/best_yoloV11s.pt",
+        #"YOLOv11m": "./models/best_yoloV11m.pt"
     }
     model_name = st.selectbox("Pilih Model", list(model_options.keys()))
     model_path = model_options[model_name]
