@@ -1,7 +1,7 @@
-streamlit==1.25.0
-ultralytics>=8.0.144
-Pillow==10.0.1
-opencv-python-headless==4.8.0.74
-pandas==2.1.1
-sqlite3==0.0.1
-werkzeug==2.3.7
+streamlit
+ultralytics
+Pillow
+opencv-python-headless
+pandas
+sqlite3
+werkzeug
