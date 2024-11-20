@@ -49,12 +49,28 @@ def show():
             
             # Melakukan prediksi
             st.write("Melakukan prediksi...")
-            result = model.predict(source=file_path, show=True, save=True)
+            result = model.predict(source=file_path, show=False, save=True)
             
-            # Mendapatkan path hasil prediksi
-            result_image_path = os.path.join("runs", "detect", "predict", uploaded_file.name)
-            st.image(result_image_path, caption="Hasil Prediksi", use_column_width=True)
+            # Mendapatkan path hasil prediksi secara dinamis
+            output_dir = os.path.join("runs", "detect", "predict")
+            if not os.path.exists(output_dir):
+                st.error("Folder hasil prediksi tidak ditemukan.")
+                return
             
-            # Simpan ke riwayat
-            save_history(uploaded_file.name, result_image_path, model_name, datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-            st.success("Prediksi selesai dan disimpan ke riwayat.")
+            # Cari file hasil prediksi di folder
+            result_files = os.listdir(output_dir)
+            predicted_file = None
+            for file in result_files:
+                if uploaded_file.name in file:
+                    predicted_file = os.path.join(output_dir, file)
+                    break
+            
+            if predicted_file:
+                st.image(predicted_file, caption="Hasil Prediksi", use_column_width=True)
+                
+                # Simpan ke riwayat
+                save_history(uploaded_file.name, predicted_file, model_name, datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+                st.success("Prediksi selesai dan disimpan ke riwayat.")
+            else:
+                st.error("Hasil prediksi tidak ditemukan.")
+
