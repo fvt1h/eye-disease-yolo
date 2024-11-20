@@ -3,6 +3,7 @@ from PIL import Image
 import os
 from datetime import datetime
 import sqlite3
+import ultralytics
 from ultralytics import YOLO
 
 # Fungsi untuk menyimpan riwayat prediksi
