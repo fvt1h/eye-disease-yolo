@@ -1,68 +1,78 @@
 import streamlit as st
 from ultralytics import YOLO
+import sqlite3
 from PIL import Image
 import os
-import sqlite3
 from datetime import datetime
 
-# Fungsi untuk menyimpan riwayat prediksi ke database
-def save_to_history(file_name, prediction_result, model_name):
+def save_prediction_to_history(filename, image_path, prediction, model_name):
     conn = sqlite3.connect('history/prediction_history.db')
     cursor = conn.cursor()
-    cursor.execute("""
+    
+    # Pastikan tabel history ada
+    cursor.execute('''
         CREATE TABLE IF NOT EXISTS history (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            file_name TEXT,
-            image_path TEXT,
-            prediction_result TEXT,
+            filename TEXT,
+            image_path TEXT, 
+            prediction TEXT,
             model_name TEXT,
-            prediction_time TEXT
+            prediction_time DATETIME
         )
-    """)
-    prediction_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    cursor.execute("INSERT INTO history (file_name, image_path, prediction_result, model_name, prediction_time) VALUES (?, ?, ?, ?, ?)", 
-                   (file_name, f"uploads/{file_name}", prediction_result, model_name, prediction_time))
+    ''')
+    
+    # Simpan prediksi ke database
+    cursor.execute('''
+        INSERT INTO history 
+        (filename, image_path, prediction, model_name, prediction_time) 
+        VALUES (?, ?, ?, ?, ?)
+    ''', (filename, image_path, prediction, model_name, datetime.now()))
+    
     conn.commit()
     conn.close()
 
-# Fungsi untuk melakukan prediksi
-def predict_image(model_path, image_file):
-    model = YOLO(model_path)
-    results = model.predict(source=image_file, show=False, save=True)
-    result_labels = [result.names[pred.cls] for pred in results[0].boxes]  # Ambil label hasil prediksi
-    return ', '.join(set(result_labels))  # Gabungkan hasil prediksi unik
-
 def show():
     st.title("Prediksi Penyakit Mata")
-
-    # Pilihan model
-    models = {
-        "YOLOv11n": "models/best_yoloV11n.pt",
-        "YOLOv11s": "models/best_yoloV11s.pt",
-        #"YOLOv11m": "models/best_yolov11m.pt"
-    }
-    selected_model = st.selectbox("Pilih Model", list(models.keys()))
-
-    # Upload gambar
-    uploaded_file = st.file_uploader("Unggah gambar fundus mata", type=["jpg", "jpeg", "png"])
     
-    if uploaded_file:
+    # Pilih model
+    model_options = {
+        "YOLOv11n": "./models/best_yolov11n.pt",
+        "YOLOv11s": "./models/best_yolov11s.pt", 
+        #"YOLOv11m": "./models/best_yolov11m.pt"
+    }
+    selected_model = st.selectbox("Pilih Model", list(model_options.keys()))
+    
+    # Upload gambar
+    uploaded_file = st.file_uploader("Unggah Gambar Fundus", type=["jpg", "jpeg", "png"])
+    
+    if uploaded_file is not None:
         # Simpan gambar sementara
-        save_path = os.path.join("uploads", uploaded_file.name)
-        with open(save_path, "wb") as f:
+        uploads_path = os.path.join("uploads", uploaded_file.name)
+        os.makedirs("uploads", exist_ok=True)
+        with open(uploads_path, "wb") as f:
             f.write(uploaded_file.getbuffer())
         
-        st.image(save_path, caption="Gambar yang diunggah", use_column_width=True)
-
-        # Prediksi
-        if st.button("Prediksi"):
-            with st.spinner("Model sedang melakukan prediksi..."):
-                prediction_result = predict_image(models[selected_model], save_path)
-
-            st.success("Prediksi selesai!")
-            st.write(f"**Hasil Prediksi:** {prediction_result}")
-            st.write(f"**Nama File:** {uploaded_file.name}")
-            st.write(f"**Model yang Digunakan:** {selected_model}")
-
-            # Simpan ke riwayat
-            save_to_history(uploaded_file.name, prediction_result, selected_model)
+        # Tampilkan gambar yang diunggah
+        st.image(uploaded_file, caption="Gambar yang Diunggah", use_column_width=True)
+        
+        # Tombol prediksi
+        if st.button("Lakukan Prediksi"):
+            # Muat model
+            model = YOLO(model_options[selected_model])
+            
+            # Lakukan prediksi
+            results = model.predict(source=uploads_path, show=True, save=True)
+            
+            # Dapatkan prediksi
+            prediction = results[0].probs.top1
+            
+            # Simpan ke dalam riwayat
+            save_prediction_to_history(
+                uploaded_file.name, 
+                uploads_path, 
+                prediction, 
+                selected_model
+            )
+            
+            # Tampilkan hasil prediksi
+            st.success(f"Hasil Prediksi: {prediction}")
