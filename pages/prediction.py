@@ -35,8 +35,8 @@ def show():
         "YOLOv11n": "./models/best_yoloV11n.pt",
         "YOLOv11s": "./models/best_yoloV11s.pt",
         "YOLOv11m": "./models/best_yoloV11m.pt",
-        "YOLOv10m": "./models/best_yoloV10m.pt",
-        "YOLOv10b": "./models/best_yoloV10b.pt",
+        #"YOLOv11l": "./models/best_yoloV11l.pt",
+        #"YOLOv11x": "./models/best_yoloV11x.pt",
     }
     model_name = st.selectbox("Pilih Model", list(model_options.keys()))
     model_path = model_options[model_name]
