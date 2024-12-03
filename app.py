@@ -8,5 +8,5 @@ if page == "Beranda":
     home.show()
 elif page == "Prediksi":
     prediction.show()
-elif page == "Riwayat":
-    history.show()
+#elif page == "Riwayat":
+    #history.show()
