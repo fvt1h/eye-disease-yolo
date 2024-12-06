@@ -1,5 +1,5 @@
 import streamlit as st
-from pages import home, prediction, history
+from pages import home, prediction #, history
 
 st.sidebar.title("Menu")
 page = st.sidebar.selectbox("Pilih Halaman", ("Beranda", "Prediksi"))#, "Riwayat"))
