@@ -5,26 +5,6 @@ import tempfile
 from datetime import datetime
 import sqlite3
 
-# Fungsi untuk menyimpan hasil prediksi ke database
-def save_history(file_name, result_path, model_name):
-    conn = sqlite3.connect("history/prediction_history.db")
-    cursor = conn.cursor()
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS history (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            file_name TEXT,
-            result_path TEXT,
-            model_name TEXT,
-            timestamp TEXT
-        )
-    """)
-    cursor.execute("""
-        INSERT INTO history (file_name, result_path, model_name, timestamp)
-        VALUES (?, ?, ?, ?)
-    """, (file_name, result_path, model_name, datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
-    conn.commit()
-    conn.close()
-
 # Fungsi untuk menampilkan halaman Prediksi
 def show():
     st.title("Halaman Prediksi")
@@ -68,8 +48,6 @@ def show():
                 if predicted_files:
                     result_image_path = os.path.join(output_dir, predicted_files[0])
                     st.image(result_image_path, caption="Hasil Prediksi", use_column_width=True)
-
-                    # Simpan ke riwayat
-                    save_history(uploaded_file.name, result_image_path, model_name)
+                    
                 else:
                     st.error("Gagal memuat hasil prediksi. Silakan coba lagi.")
