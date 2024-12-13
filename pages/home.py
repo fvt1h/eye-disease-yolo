@@ -15,7 +15,7 @@ def show():
     for condition, (img_path, explanation_path) in images.items():
         st.subheader(condition)
         img = Image.open(img_path)
-        st.image(img, caption=f"Gambar contoh {condition}", use_column_width=True)
+        st.image(img, caption=f"Gambar contoh {condition}", use_container_width=True)
         with open(explanation_path, "r") as file:
             explanation = file.read()
         st.write(explanation)

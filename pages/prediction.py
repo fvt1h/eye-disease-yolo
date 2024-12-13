@@ -5,9 +5,9 @@ import tempfile
 from datetime import datetime
 import sqlite3
 
-# Fungsi untuk menampilkan halaman Prediksi
+# Fungsi untuk menampilkan halaman Deteksi
 def show():
-    st.title("Halaman Prediksi")
+    st.title("Halaman Deteksi")
     st.write("Unggah gambar fundus mata untuk mendeteksi penyakit.")
 
     # Pilihan model
@@ -30,24 +30,24 @@ def show():
 
         st.image(temp_file_path, caption="Gambar yang diunggah", use_column_width=True)
 
-        # Tombol prediksi
-        if st.button("Prediksi"):
-            st.write("Melakukan prediksi, mohon tunggu...")
+        # Tombol Deteksi
+        if st.button("Deteksi"):
+            st.write("Melakukan Deteksi, mohon tunggu...")
 
             # Load model
             model = YOLO(model_path)
 
-            # Jalankan prediksi
+            # Jalankan Deteksi
             with tempfile.TemporaryDirectory() as temp_dir:
                 result = model.predict(source=temp_file_path, project=temp_dir, name="predict", save=True)
 
-                # Ambil path hasil prediksi
+                # Ambil path hasil Deteksi
                 output_dir = os.path.join(temp_dir, "predict")
                 predicted_files = [f for f in os.listdir(output_dir) if f.endswith(".jpg")]
 
                 if predicted_files:
                     result_image_path = os.path.join(output_dir, predicted_files[0])
-                    st.image(result_image_path, caption="Hasil Prediksi", use_column_width=True)
+                    st.image(result_image_path, caption="Hasil Deteksi", use_column_width=True)
                     
                 else:
-                    st.error("Gagal memuat hasil prediksi. Silakan coba lagi.")
+                    st.error("Gagal memuat hasil Deteksi. Silakan coba lagi.")

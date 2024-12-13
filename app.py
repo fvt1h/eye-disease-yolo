@@ -2,9 +2,9 @@ import streamlit as st
 from pages import home, prediction
 
 st.sidebar.title("Menu")
-page = st.sidebar.selectbox("Pilih Halaman", ("Beranda", "Prediksi"))
+page = st.sidebar.selectbox("Pilih Halaman", ("Beranda", "Deteksi"))
 
 if page == "Beranda":
     home.show()
-elif page == "Prediksi":
+elif page == "Deteksi":
     prediction.show()
