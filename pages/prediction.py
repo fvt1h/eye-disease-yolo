@@ -28,7 +28,7 @@ def show():
             temp_file.write(uploaded_file.read())
             temp_file_path = temp_file.name
 
-        st.image(temp_file_path, caption="Gambar yang diunggah", use_column_width=True)
+        st.image(temp_file_path, caption="Gambar yang diunggah", use_container_width=True)
 
         # Tombol Deteksi
         if st.button("Deteksi"):
