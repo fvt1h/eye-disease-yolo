@@ -47,7 +47,7 @@ def show():
 
                 if predicted_files:
                     result_image_path = os.path.join(output_dir, predicted_files[0])
-                    st.image(result_image_path, caption="Hasil Deteksi", use_column_width=True)
+                    st.image(result_image_path, caption="Hasil Deteksi", use_container_width=True)
                     
                 else:
                     st.error("Gagal memuat hasil Deteksi. Silakan coba lagi.")
