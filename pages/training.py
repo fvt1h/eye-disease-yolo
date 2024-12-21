@@ -12,19 +12,19 @@ def show():
             "result": "assets/sample_images/result_yolov11n.png",
             "train_batch": "assets/sample_images/train_batch_yolov11n.png",
             "val_batch": "assets/sample_images/val_batch2_pred_yolov11n.png",
-            "explanation": "assets/explanations/result_yolov11n.txt",
+            "explanation": "assets/explanations/yolov11n.txt",
         },
         "YoloV11s": {
             "result": "assets/sample_images/result_yolov11s.png",
             "train_batch": "assets/sample_images/train_batch_yolov11s.png",
             "val_batch": "assets/sample_images/val_batch_pred_yolov11s.png",
-            "explanation": "assets/explanations/result_yolov11s.txt",
+            "explanation": "assets/explanations/yolov11s.txt",
         },
         "YoloV11m": {
             "result": "assets/sample_images/result_yolov11m.png",
             "train_batch": "assets/sample_images/train_batch_yolov11m.png",
             "val_batch": "assets/sample_images/val_batch_pred_yolov11m.png",
-            "explanation": "assets/explanations/result_yolov11m.txt",
+            "explanation": "assets/explanations/yolov11m.txt",
         },
     }
 
