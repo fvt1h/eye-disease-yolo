@@ -17,13 +17,13 @@ def show():
         "YoloV11s": {
             "result": "assets/sample_images/results_yolov11s.png",
             "train_batch": "assets/sample_images/train_batch_yolov11s.png",
-            "val_batch": "assets/sample_images/val_batch_pred_yolov11s.png",
+            "val_batch": "assets/sample_images/val_batch2_pred_yolov11s.png",
             "explanation": "assets/explanations/yolov11s.txt",
         },
         # "YoloV11m": {
         #     "result": "assets/sample_images/results_yolov11m.png",
         #     "train_batch": "assets/sample_images/train_batch_yolov11m.png",
-        #     "val_batch": "assets/sample_images/val_batch_pred_yolov11m.png",
+        #     "val_batch": "assets/sample_images/val_batch2_pred_yolov11m.png",
         #     "explanation": "assets/explanations/yolov11m.txt",
         # },
     }
