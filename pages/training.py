@@ -63,7 +63,7 @@ from ultralytics import YOLO
 # Menyimpan model
 model.save('best_yoloV11m.pt')
 """,
-            "explanation": "Setelah proses training selesai, model disimpan ke file bernama `yolov11_custom.pth`."
+            "explanation": "Setelah proses training selesai, model disimpan ke file bernama `yolov11_custom.pt`."
         }
     ]
 
