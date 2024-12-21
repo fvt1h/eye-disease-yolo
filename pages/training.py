@@ -32,20 +32,26 @@ def show():
     for model_name, data in images.items():
         st.subheader(model_name)
         
-        # Gambar hasil deteksi/akurasi
-        result_img = Image.open(data["result"])
-        st.image(result_img, caption=f"Result/Akurasi - {model_name}", use_container_width=True)
+        # Membuat kolom untuk gambar
+        cols = st.columns(3)
+        
+        # Gambar result/akurasi
+        with cols[0]:
+            result_img = Image.open(data["result"])
+            st.image(result_img, caption=f"Result/Akurasi", use_container_width=True)
         
         # Gambar train batch
-        train_img = Image.open(data["train_batch"])
-        st.image(train_img, caption=f"Train Batch - {model_name}", use_container_width=True)
+        with cols[1]:
+            train_img = Image.open(data["train_batch"])
+            st.image(train_img, caption=f"Train Batch", use_container_width=True)
         
         # Gambar val batch
-        val_img = Image.open(data["val_batch"])
-        st.image(val_img, caption=f"Val Batch - {model_name}", use_container_width=True)
+        with cols[2]:
+            val_img = Image.open(data["val_batch"])
+            st.image(val_img, caption=f"Val Batch", use_container_width=True)
         
-        # Penjelasan model
+        # Penjelasan model di bawah gambar
+        st.write(f"Penjelasan Model {model_name}:")
         with open(data["explanation"], "r") as file:
             explanation = file.read()
-        st.write(f"Penjelasan Model {model_name}:")
         st.write(explanation)
