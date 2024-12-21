@@ -3,3 +3,4 @@ ultralytics
 pillow
 pandas
 opencv-python-headless
+nbformat
