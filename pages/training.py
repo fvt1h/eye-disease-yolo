@@ -87,6 +87,12 @@ model.save('best_yoloV11m.pt')
             "val_batch": "assets/sample_images/val_batch2_pred_yolov11s.jpg",
             "explanation": "assets/explanations/yolov11s.txt",
         },
+        "YoloV11m": {
+            "result": "assets/sample_images/results_yolov11m.png",
+            "train_batch": "assets/sample_images/train_batch_yolov11m.jpg",
+            "val_batch": "assets/sample_images/val_batch2_pred_yolov11m.jpg",
+            "explanation": "assets/explanations/yolov11m.txt",
+        },
     }
 
     # Loop untuk menampilkan informasi setiap model
