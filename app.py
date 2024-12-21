@@ -8,5 +8,5 @@ if page == "Beranda":
     home.show()
 elif page == "Deteksi":
     prediction.show()
-elif page == "Train":
+else page == "Train":
     training.show()
