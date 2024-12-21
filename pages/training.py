@@ -3,10 +3,7 @@ from PIL import Image
 import nbformat
 
 def show():
-    st.title("Model Yolov11 Detection - Custom Data")
-    
-    st.header("Kode Training Model")
-    st.write("Berikut adalah potongan kode dari notebook yang digunakan untuk melatih model, lengkap dengan penjelasannya.")
+    st.title("Model Yolov11 Custom Dataset")
 
     # Header untuk kode training
     st.header("Kode Training Model")
@@ -54,9 +51,21 @@ from ultralytics import YOLO
         {
             "code": """
 # Melatih model
-!yolo task=detect mode=train data=/content/dataset/dataset.yaml model=yolov11m.pt imgsz=640 epochs=100
+model = YOLO("yolo11n.pt")
+model.train(
+    data="/kaggle/input/dataset/dataset.yaml",
+    imgsz=640,
+    epochs=100,
+    patience=15,  
+    save=True,    
+    save_period=1,  
+    project='YOLOv11n_training',
+    name='run1',
+    exist_ok=True,
+    amp=True
+)
 """,
-            "explanation": "Bagian ini melakukan proses training model YOLOv11, sebagai contohnya adalah yolov11m dan mentrainingnya dengan dataset yang telah dimuat sesuai dengan path yang ada pada dataset.yaml yang akan di training sebanyak 100 epoch."
+            "explanation": "Bagian ini melakukan proses training model YOLOv11, sebagai contohnya adalah yolov11m dan mentrainingnya dengan dataset yang telah dimuat sesuai dengan path yang ada pada dataset.yaml yang akan di training sebanyak 100 epoch. Dimana terdapat keterangan patience 15 yang digunakan sebagai early stopping itu berarti jika dalam 15x epoch tidak ada perkembangan maka akan otomatis stop. Menambahkan amp=True untuk Automatic Mixed Precision training. Menambahkan parameter save=True dan save_period=1 untuk menyimpan checkpoint. Menggunakan project dan name untuk mengorganisir output training"
         },
         {
             "code": """
