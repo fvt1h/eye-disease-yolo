@@ -7,6 +7,6 @@ page = st.sidebar.selectbox("Pilih Halaman", ("Beranda", "Deteksi"))
 if page == "Beranda":
     home.show()
 elif page == "Train":
-    prediction.show()
+    training.show()
 elif page == "Deteksi":
     prediction.show()
