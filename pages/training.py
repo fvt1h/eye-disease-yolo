@@ -20,12 +20,12 @@ def show():
             "val_batch": "assets/sample_images/val_batch_pred_yolov11s.png",
             "explanation": "assets/explanations/yolov11s.txt",
         },
-        "YoloV11m": {
-            "result": "assets/sample_images/result_yolov11m.png",
-            "train_batch": "assets/sample_images/train_batch_yolov11m.png",
-            "val_batch": "assets/sample_images/val_batch_pred_yolov11m.png",
-            "explanation": "assets/explanations/yolov11m.txt",
-        },
+        # "YoloV11m": {
+        #     "result": "assets/sample_images/result_yolov11m.png",
+        #     "train_batch": "assets/sample_images/train_batch_yolov11m.png",
+        #     "val_batch": "assets/sample_images/val_batch_pred_yolov11m.png",
+        #     "explanation": "assets/explanations/yolov11m.txt",
+        # },
     }
 
     # Loop untuk menampilkan informasi setiap model
